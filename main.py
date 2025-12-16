@@ -25,24 +25,43 @@ def bar_cheb_weights(n: int = 10) -> np.ndarray | None:
 
 
 def barycentric_inte(
-    xi: np.ndarray, yi: np.ndarray, wi: np.ndarray, x: np.ndarray
+    xi: np.ndarray,
+    yi: np.ndarray,
+    wi: np.ndarray,
+    x: np.ndarray
 ) -> np.ndarray | None:
-    """Funkcja przeprowadza interpolację metodą barycentryczną dla zadanych 
-    węzłów xi i wartości funkcji interpolowanej yi używając wag wi. Zwraca 
-    wyliczone wartości funkcji interpolującej dla argumentów x w postaci 
-    wektora (n,).
-
-    Args:
-        xi (np.ndarray): Wektor węzłów interpolacji (m,).
-        yi (np.ndarray): Wektor wartości funkcji interpolowanej w węzłach (m,).
-        wi (np.ndarray): Wektor wag interpolacji (m,).
-        x (np.ndarray): Wektor argumentów dla funkcji interpolującej (n,).
     
-    Returns:
-        (np.ndarray): Wektor wartości funkcji interpolującej (n,).
-        Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
-    """
-    pass
+
+    
+    if not isinstance(xi, np.ndarray) or not isinstance(yi, np.ndarray):
+        return None
+    if not isinstance(wi, np.ndarray) or not isinstance(x, np.ndarray):
+        return None
+
+    if xi.ndim != 1 or yi.ndim != 1 or wi.ndim != 1 or x.ndim != 1:
+        return None
+
+    if len(xi) != len(yi) or len(xi) != len(wi):
+        return None
+
+    m = xi.size
+    result = np.zeros_like(x, dtype=float)
+
+    for idx, xv in enumerate(x):
+        dx = xv - xi
+
+        
+        hit = np.nonzero(dx == 0)[0]
+        if hit.size:
+            result[idx] = yi[hit[0]]
+            continue
+
+        temp = wi / dx
+        result[idx] = np.dot(temp, yi) / np.sum(temp)
+
+    return result
+
+
 
 
 def L_inf(
@@ -61,12 +80,8 @@ def L_inf(
         (float): Wartość normy L-nieskończoność.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    try:
-        xr_arr=np.asarray(xr)
-        x_arr=np.asarray(x)
-        return np.max(np.abs(x-xr))
-    except:
-        return None
-
+    if isinstance(xr, (int, float)) and isinstance(x, (int, float)):
+        return abs(xr - x)
     
-   
+    return np.max(np.abs(np.array(xr) - np.array(x)))
+
